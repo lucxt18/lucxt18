@@ -1,0 +1,15 @@
+    def forward_denoise(self, x, y, z, b, c, h, w):
+        x_denoi = torch.zeros(x[:,:,self.even_index].shape).to(x.device)
+        var_hat = x[:, :, self.even_index] + x[:, :, self.uneven_index]
+        mj = var_hat[23,0] - x[23, 0, self.even_index][78]
+        var = torch.mean(var_hat, [1,2])
+        x_denoi[:, 0, 0] = var
+        var = var.view([b * c, 1, 1])
+        var = var.repeat(1, 1, self.M)
+        x = x[:,:,self.even_index] - x[:,:,self.uneven_index]
+        error2 = torch.sqrt(torch.sum((x - y) ** 2, [1,2]))
+
+        return x_denoi, var
+
+
+f1 = model1.forward_denoise(m1, m1_theo, z, batch_size, 1, img_size, img_size)
